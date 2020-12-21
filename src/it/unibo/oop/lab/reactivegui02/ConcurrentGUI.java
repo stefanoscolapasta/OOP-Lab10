@@ -1,7 +1,9 @@
-package it.unibo.oop.lab.reactivegui01;
+package it.unibo.oop.lab.reactivegui02;
 
 
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,6 +13,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 
 /**
@@ -22,7 +26,9 @@ public final class ConcurrentGUI extends JFrame {
     private static final double WIDTH_PERC = 0.2;
     private static final double HEIGHT_PERC = 0.1;
     private final JLabel display = new JLabel();
-    private final JButton stop = new JButton("stop");
+    private final JButton bUp = new JButton("up");
+    private final JButton bDown = new JButton("down");
+    private final JButton bStop = new JButton("stop");
 
     /**
      * Builds a new CGUI.
@@ -32,9 +38,11 @@ public final class ConcurrentGUI extends JFrame {
         final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         this.setSize((int) (screenSize.getWidth() * WIDTH_PERC), (int) (screenSize.getHeight() * HEIGHT_PERC));
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        final JPanel panel = new JPanel();
-        panel.add(display);
-        panel.add(stop);
+        final JPanel panel = new JPanel(new FlowLayout());
+        panel.add(this.display);
+        panel.add(this.bUp);
+        panel.add(this.bDown);
+        panel.add(this.bStop);   
         this.getContentPane().add(panel);
         this.setVisible(true);
         /*
@@ -42,31 +50,25 @@ public final class ConcurrentGUI extends JFrame {
          * thread management should be left to
          * java.util.concurrent.ExecutorService
          */
-        final Agent agent = new Agent();
+        final AgentUp agent = new AgentUp();
         new Thread(agent).start();
         /*
          * Register a listener that stops it
          */
-        stop.addActionListener(new ActionListener() {
-            /**
-             * event handler associated to action event on button stop.
-             * 
-             * @param e
-             *            the action event that will be handled by this listener
-             */
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                // Agent should be final
+        bStop.addActionListener(e -> {
                 agent.stopCounting();
-            }
+            });
+        
+        bUp.addActionListener(e -> {
+                agent.restartCountingIfStopped();
         });
+        
+        bDown.addActionListener(e -> {
+                agent.invertCounting();
+            });
     }
-
-    /*
-     * The counter agent is implemented as a nested class. This makes it
-     * invisible outside and encapsulated.
-     */
-    private class Agent implements Runnable {
+    
+    private class AgentUp implements Runnable {
         /*
          * Stop is volatile to ensure visibility. Look at:
          * 
@@ -78,7 +80,8 @@ public final class ConcurrentGUI extends JFrame {
          * 
          */
         private volatile boolean stop;
-        private volatile int counter;
+        private int counter;
+        private volatile int delta = 1;
 
         @Override
         public void run() {
@@ -88,9 +91,9 @@ public final class ConcurrentGUI extends JFrame {
                      * All the operations on the GUI must be performed by the
                      * Event-Dispatch Thread (EDT)!
                      */
-                    SwingUtilities.invokeAndWait(() -> ConcurrentGUI.this.display.setText(Integer.toString(Agent.this.counter)));
-                    this.counter++;
-                    Thread.sleep(1000);
+                    SwingUtilities.invokeAndWait(() -> ConcurrentGUI.this.display.setText(Integer.toString(AgentUp.this.counter)));
+                    this.counter += delta;             
+                    Thread.sleep(100);
                 } catch (InvocationTargetException | InterruptedException ex) {
                     /*
                      * This is just a stack trace print, in a real program there
@@ -106,6 +109,16 @@ public final class ConcurrentGUI extends JFrame {
          */
         public void stopCounting() {
             this.stop = true;
+        }
+        
+        public void restartCountingIfStopped() {
+            this.stop = false;
+            this.delta = 1;
+        }
+        
+        public void invertCounting() {
+            this.stop = false;
+            this.delta = -1;
         }
     }
 }

@@ -47,10 +47,11 @@ public class TestMatrix {
                 sum += i;
             }
         }
-        System.out.println("BTW: the sum with " + SIZE + "*" + SIZE + " elements is: " + sum);
+        int r = 10 / 4;
+        System.out.println("BTW: the sum with " + SIZE + " R--> " +r+ " *" + SIZE + " elements is: " + sum);
         long time;
-        for (final int threads: new int[] { 1, 2, 3, 8, 16, 32, 100 }) {
-            final SumMatrix sumList = null; // new MultiThreadedSumMatrix(threads);
+        for (final int threads: new int[] { 1, 2, 3, 4, 5, 8, 16, 32, 100, 120, 150, 180, 1000}) {
+            final SumMatrix sumList = new MultiThreadedSumMatrix(threads);
             time = System.nanoTime();
             assertEquals(sum, sumList.sum(matrix), EXPECTED_DELTA);
             time = System.nanoTime() - time;

@@ -21,7 +21,7 @@ public class TestListSumClassic {
      * Note that it is often impossible to split the load in an exact equal
      * manner - that's not an issue normally, however.
      */
-    private static final int SIZE = 10_000_000;
+    private static final int SIZE = 100_000_000;
     private static final String MSEC = " msec";
 
     /**

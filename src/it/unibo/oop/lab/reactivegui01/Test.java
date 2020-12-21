@@ -1,9 +1,5 @@
 package it.unibo.oop.lab.reactivegui01;
 
-/**
- * TestMatrix class for first reactive GUI.
- *
- */
 public final class Test {
 
     private Test() { }
